@@ -8,6 +8,8 @@
 
 #import <XCTest/XCTest.h>
 
+#import "BSG_KSMachHeaders.h"
+#import "BugsnagStackframe.h"
 #import "BugsnagStacktrace.h"
 
 @interface BugsnagStacktraceTest : XCTestCase
@@ -52,6 +54,22 @@
     }
     BugsnagStacktrace *stacktrace = [[BugsnagStacktrace alloc] initWithTrace:trace binaryImages:self.binaryImages];
     XCTAssertEqual(200, [stacktrace.trace count]);
+}
+
+- (void)testFromCallStackSymbols {
+    bsg_mach_headers_register_for_changes();
+    NSArray<NSString *> *callStackSymbols = [NSThread callStackSymbols];
+    BugsnagStacktrace *stacktrace = [[BugsnagStacktrace alloc] initWithCallStackSymbols:callStackSymbols];
+    XCTAssertEqual(stacktrace.trace.count, callStackSymbols.count - 1);
+    [stacktrace.trace enumerateObjectsUsingBlock:^(BugsnagStackframe *stackframe, NSUInteger idx, BOOL *stop) {
+        XCTAssertNotNil(stackframe.frameAddress);
+        XCTAssertNotNil(stackframe.machoFile);
+        XCTAssertNotNil(stackframe.machoUuid);
+        XCTAssertNotNil(stackframe.machoVmAddress);
+        XCTAssertNotNil(stackframe.machoLoadAddress);
+        XCTAssertNotNil(stackframe.symbolAddress);
+        XCTAssertTrue([callStackSymbols[idx] containsString:stackframe.method]);
+    }];
 }
 
 @end

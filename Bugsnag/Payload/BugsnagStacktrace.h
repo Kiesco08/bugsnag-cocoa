@@ -18,6 +18,8 @@
 - (instancetype)initWithTrace:(NSArray<NSDictionary *> *)trace
                  binaryImages:(NSArray<NSDictionary *> *)binaryImages;
 
+- (instancetype)initWithCallStackSymbols:(NSArray<NSString *> *)callStackSymbols;
+
 - (NSArray *)toArray;
 
 @end
